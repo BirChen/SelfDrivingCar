@@ -22,6 +22,10 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable(midterm_16 src/midterm_16.cpp)
-target_link_libraries(midterm_16 ${catkin_LIBRARIES})
-target_link_libraries (midterm_16 ${PCL_LIBRARIES})
+add_executable(midterm_16_easy src/midterm_16_easy.cpp)
+target_link_libraries(midterm_16_easy ${catkin_LIBRARIES})
+target_link_libraries (midterm_16_easy ${PCL_LIBRARIES})
+
+add_executable(midterm_16_medium src/midterm_16_medium.cpp)
+target_link_libraries(midterm_16_medium ${catkin_LIBRARIES})
+target_link_libraries (midterm_16_medium ${PCL_LIBRARIES})
