@@ -24,13 +24,13 @@ pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 pcl::PointCloud<pcl::PointXYZ>::Ptr LiDAR (new pcl::PointCloud<pcl::PointXYZ>), LiDAR_Before (new pcl::PointCloud<pcl::PointXYZ>);
 
 double T;
-float scan_x,scan_y,scan_z,scan_roll,scan_pitch,scan_yaw,yaw_set,filter_size = 1.0;
 int LidarInputTimes,CsvOutputTimes,NewLidarInput,FirstInput,BagDefine,MapPubTimes;
+float scan_x,scan_y,scan_z,scan_roll,scan_pitch,scan_yaw,yaw_set,filter_size = 1.0;
 
 Vector3d GPS_Position;
-Quaterniond q,qimu,qLidar2Car,qCar2Lidar,Final_Quaternion;
-Matrix3d RotationMatrix_Imu,RotationMatrix_Lidar2Car,RotationMatrix_Car2Lidar;
-Matrix4f InitialGuess,Lidar2Car,Car2Lidar,Final_Transformation,LiDAR_Move_Transformation;
+Quaterniond q,qimu,qCar2Lidar,Final_Quaternion;
+Matrix3d RotationMatrix_Imu,RotationMatrix_Car2Lidar;
+Matrix4f InitialGuess,Car2Lidar,Final_Transformation,LiDAR_Move_Transformation;
 
 
 
@@ -86,14 +86,6 @@ int main(int argc, char** argv) {
   icp.setTransformationEpsilon(1e-10);
   icp.setEuclideanFitnessEpsilon(0.001);
   icp.setMaximumIterations (1000);
-
-  //Set Lidar2Car transformation
-  qLidar2Car.x() = 0.005;  qLidar2Car.y() = -0.018;  qLidar2Car.z() = 0.019 ;  qLidar2Car.w() = 1;
-  RotationMatrix_Lidar2Car = qLidar2Car.toRotationMatrix();
-  Lidar2Car << RotationMatrix_Lidar2Car(0,0) , RotationMatrix_Lidar2Car(0,1) , RotationMatrix_Lidar2Car(0,2) , -0.335 ,
-               RotationMatrix_Lidar2Car(1,0) , RotationMatrix_Lidar2Car(1,1) , RotationMatrix_Lidar2Car(1,2) ,  0.020 ,
-               RotationMatrix_Lidar2Car(2,0) , RotationMatrix_Lidar2Car(2,1) , RotationMatrix_Lidar2Car(2,2) , -3.474 ,
-                      0         ,        0         ,        0         ,    1   ;
 
   //Set Car2Lidar transformation
   qCar2Lidar.x() = -0.00515049;  qCar2Lidar.y() = 0.018102;  qCar2Lidar.z() = -0.019207 ;  qCar2Lidar.w() = 0.999638;

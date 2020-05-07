@@ -24,13 +24,13 @@ pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 pcl::PointCloud<pcl::PointXYZ>::Ptr LiDAR (new pcl::PointCloud<pcl::PointXYZ>), LiDAR_Before (new pcl::PointCloud<pcl::PointXYZ>);
 
 double T;
-float scan_x,scan_y,scan_z,scan_roll,scan_pitch,scan_yaw,yaw_set,filter_size = 3.0;
 int LidarInputTimes,CsvOutputTimes,NewLidarInput,FirstInput,BagDefine,MapPubTimes;
+float scan_x,scan_y,scan_z,scan_roll,scan_pitch,scan_yaw,yaw_set,filter_size = 1.0;
 
 Vector3d GPS_Position;
-Quaterniond q,qimu,qLidar2Car,qCar2Lidar,Final_Quaternion;
-Matrix3d RotationMatrix_Imu,RotationMatrix_Lidar2Car,RotationMatrix_Car2Lidar;
-Matrix4f InitialGuess,Lidar2Car,Car2Lidar,Final_Transformation,LiDAR_Move_Transformation;
+Quaterniond q,qimu,qCar2Lidar,Final_Quaternion;
+Matrix3d RotationMatrix_Imu,RotationMatrix_Car2Lidar;
+Matrix4f InitialGuess,Car2Lidar,Final_Transformation,LiDAR_Move_Transformation;
 
 const char *map_filenames[] = {"map_200_600.pcd","map_200_700.pcd","map_200_800.pcd","map_300_500.pcd","map_300_600.pcd","map_300_700.pcd","map_300_800.pcd","map_300_900.pcd","map_300_1500.pcd","map_300_1600.pcd","map_300_1700.pcd",
 "map_400_500.pcd","map_400_600.pcd","map_400_700.pcd","map_400_800.pcd","map_400_900.pcd","map_400_1000.pcd","map_400_1100.pcd","map_400_1500.pcd","map_400_1600.pcd","map_400_1700.pcd","map_400_1800.pcd",
@@ -104,20 +104,12 @@ int main(int argc, char** argv) {
   icp.setEuclideanFitnessEpsilon(0.001);
   icp.setMaximumIterations (1000);
 
-  //Set Lidar2Car transformation
-  qLidar2Car.x() = 0.005;  qLidar2Car.y() = -0.018;  qLidar2Car.z() = 0.019 ;  qLidar2Car.w() = 1;
-  RotationMatrix_Lidar2Car = qLidar2Car.toRotationMatrix();
-  Lidar2Car << RotationMatrix_Lidar2Car(0,0) , RotationMatrix_Lidar2Car(0,1) , RotationMatrix_Lidar2Car(0,2) , -0.335 ,
-               RotationMatrix_Lidar2Car(1,0) , RotationMatrix_Lidar2Car(1,1) , RotationMatrix_Lidar2Car(1,2) ,  0.020 ,
-               RotationMatrix_Lidar2Car(2,0) , RotationMatrix_Lidar2Car(2,1) , RotationMatrix_Lidar2Car(2,2) , -3.474 ,
-                      0         ,        0         ,        0         ,    1   ;
-
   //Set Car2Lidar transformation
   qCar2Lidar.x() = -0.0153009936601;  qCar2Lidar.y() = 0.0173974519781;  qCar2Lidar.z() = -0.707084648946 ;  qCar2Lidar.w() = 0.706749253613;
   RotationMatrix_Car2Lidar = qCar2Lidar.toRotationMatrix();
-  Car2Lidar << RotationMatrix_Car2Lidar(0,0) , RotationMatrix_Car2Lidar(0,1) , RotationMatrix_Car2Lidar(0,2) , 0.706749253613 ,
+  Car2Lidar << RotationMatrix_Car2Lidar(0,0) , RotationMatrix_Car2Lidar(0,1) , RotationMatrix_Car2Lidar(0,2) ,      0.75      ,
                RotationMatrix_Car2Lidar(1,0) , RotationMatrix_Car2Lidar(1,1) , RotationMatrix_Car2Lidar(1,2) ,        0       ,
-               RotationMatrix_Car2Lidar(2,0) , RotationMatrix_Car2Lidar(2,1) , RotationMatrix_Car2Lidar(2,2) , 0.706749253613 ,
+               RotationMatrix_Car2Lidar(2,0) , RotationMatrix_Car2Lidar(2,1) , RotationMatrix_Car2Lidar(2,2) , 1.84019005299  ,
                       0         ,        0         ,        0         ,   1  ;
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcd_Map (new pcl::PointCloud<pcl::PointXYZ>);
@@ -178,25 +170,25 @@ int main(int argc, char** argv) {
     //Set bag info
     if (BagDefine == 0 & GPS_Position(0) != 0){
       if (GPS_Position(0) > 740 & GPS_Position(0) < 750){
-        yaw_set = 85;
+        yaw_set = 90;
         myfile.open ((ros::package::getPath("midterm_16")+"/result/16_medium_P.csv").c_str());
         BagDefine = 1;
         ROS_INFO("This is Public bag");
       }
       else if (GPS_Position(0) > 975 & GPS_Position(0) < 985){
-        yaw_set = 85;
+        yaw_set = 90;
         myfile.open ((ros::package::getPath("midterm_16")+"/result/16_medium_1.csv").c_str());
         BagDefine = 1;
         ROS_INFO("This is Private_1 bag");
       }
       else if (GPS_Position(0) > 1765 & GPS_Position(0) < 1775){
-        yaw_set = 85;
+        yaw_set = 90;
         myfile.open ((ros::package::getPath("midterm_16")+"/result/16_medium_2.csv").c_str());
         BagDefine = 1;
         ROS_INFO("This is Private_2 bag");
       }
       else if (GPS_Position(0) > 1710 & GPS_Position(0) < 1720){
-        yaw_set = 85;
+        yaw_set = 90;
         myfile.open ((ros::package::getPath("midterm_16")+"/result/16_medium_3.csv").c_str());
         BagDefine = 1;
         ROS_INFO("This is Private_3 bag");
@@ -220,9 +212,9 @@ int main(int argc, char** argv) {
         pcl::PointCloud<pcl::PointXYZ> LiDAR_Move;
         icp.align(LiDAR_Move);
         LiDAR_Move_Transformation << icp.getFinalTransformation();
-        InitialGuess << RotationMatrix_Imu(0,0) , RotationMatrix_Imu(0,1) , RotationMatrix_Imu(0,2) , Final_Transformation(0,3)+Final_Transformation(0,0)*LiDAR_Move_Transformation(0,3)+Final_Transformation(1,0)*LiDAR_Move_Transformation(1,3)+Final_Transformation(2,0)*LiDAR_Move_Transformation(2,3),
-                        RotationMatrix_Imu(1,0) , RotationMatrix_Imu(1,1) , RotationMatrix_Imu(1,2) , Final_Transformation(1,3)+Final_Transformation(0,1)*LiDAR_Move_Transformation(0,3)+Final_Transformation(1,1)*LiDAR_Move_Transformation(1,3)+Final_Transformation(2,1)*LiDAR_Move_Transformation(2,3),
-                        RotationMatrix_Imu(2,0) , RotationMatrix_Imu(2,1) , RotationMatrix_Imu(2,2) , Final_Transformation(2,3)+Final_Transformation(0,2)*LiDAR_Move_Transformation(0,3)+Final_Transformation(1,2)*LiDAR_Move_Transformation(1,3)+Final_Transformation(2,2)*LiDAR_Move_Transformation(2,3),
+        InitialGuess << RotationMatrix_Imu(0,0) , RotationMatrix_Imu(0,1) , RotationMatrix_Imu(0,2) ,(Final_Transformation(0,3)+Final_Transformation(0,0)*LiDAR_Move_Transformation(0,3)+Final_Transformation(1,0)*LiDAR_Move_Transformation(1,3)+Final_Transformation(2,0)*LiDAR_Move_Transformation(2,3))*0.7+GPS_Position(0)*0.3,
+                        RotationMatrix_Imu(1,0) , RotationMatrix_Imu(1,1) , RotationMatrix_Imu(1,2) ,(Final_Transformation(1,3)+Final_Transformation(0,1)*LiDAR_Move_Transformation(0,3)+Final_Transformation(1,1)*LiDAR_Move_Transformation(1,3)+Final_Transformation(2,1)*LiDAR_Move_Transformation(2,3))*0.7+GPS_Position(1)*0.3,
+                        RotationMatrix_Imu(2,0) , RotationMatrix_Imu(2,1) , RotationMatrix_Imu(2,2) ,(Final_Transformation(2,3)+Final_Transformation(0,2)*LiDAR_Move_Transformation(0,3)+Final_Transformation(1,2)*LiDAR_Move_Transformation(1,3)+Final_Transformation(2,2)*LiDAR_Move_Transformation(2,3))*0.7+GPS_Position(2)*0.3,
                             0    ,    0    ,    0    ,     1     ;
         LiDAR_Before = LiDAR;
       }
